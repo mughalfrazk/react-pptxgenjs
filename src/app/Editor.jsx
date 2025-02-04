@@ -1,157 +1,329 @@
 import React, { useEffect, useState } from "react";
-import pptxgen from "pptxgenjs"; // react-app webpack will use package.json `"module": "dist/pptxgen.es.js"` value
+import pptxgen from "pptxgenjs";
+
+import Slide from "../components/Slide";
+import { IoClose, IoImage } from "react-icons/io5";
+import { LuScanText } from "react-icons/lu";
+
+const layout_section_sizing = [
+  {
+    layout: 1,
+    sections: [{ x: 0.5, y: 0.45, w: "90%", h: "84%" }],
+  },
+  {
+    layout: 2,
+    sections: [
+      { x: 0.5, y: 0.45, w: "44%", h: "84%" },
+      {
+        x: 5.1,
+        y: 0.45,
+        w: "44%",
+        h: "84%",
+      },
+    ],
+  },
+  {
+    layout: 3,
+    sections: [
+      { x: 0.5, y: 0.45, w: "44%", h: "41%" },
+      {
+        x: 5.1,
+        y: 0.45,
+        w: "44%",
+        h: "41%",
+      },
+      {
+        x: 0.5,
+        y: 2.85,
+        w: "44%",
+        h: "41%",
+      },
+      {
+        x: 5.1,
+        y: 2.85,
+        w: "44%",
+        h: "41%",
+      },
+    ],
+  },
+];
 
 const Editor = () => {
   const [slides, setSlides] = useState([]);
 
-  useEffect(() => {
-    setSlides([emptySlide]);
-  }, []);
+  const createNewSlide = (layout) => {
+    let content = {};
+    if (layout === 3) content = { 0: null, 1: null, 2: null, 3: null };
+    else if (layout === 2) content = { 0: null, 1: null };
+    else if (layout === 1) content = { 0: null };
 
-  const addSlide = () => {
-    setSlides([...slides, emptySlide]);
+    const lastElement = [...slides].pop();
+    setSlides([
+      ...slides,
+      { id: lastElement ? lastElement.id + 1 : 0, layout, content },
+    ]);
   };
 
-  const exportPPTX = () => {
+  useEffect(() => {
     console.log(slides);
+  }, [slides]);
+
+  const exportPPTX = () => {
+    let pptx = new pptxgen();
+    const text = `
+      Introduction
+      - Artificial Intelligence (AI) is revolutionizing various industries.
+      - Businesses are leveraging AI for automation, analytics, and customer engagement.
+      - This presentation explores AI's role in business growth and operational efficiency.
+    `;
+    const image =
+      "https://plus.unsplash.com/premium_photo-1682785303642-f56eac9fbeb6?q=80&w=2080&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
+    slides.forEach((item) => {
+      let slide = pptx.addSlide();
+      const coordinates = layout_section_sizing.filter(
+        (c) => c.layout === item.layout
+      )[0];
+
+      if (item.layout === 1) {
+        for (const [key, value] of Object.entries(item.content)) {
+          if (value === "image") {
+            slide.addImage({
+              path: image,
+              type: "cover",
+              ...coordinates.sections[key],
+            });
+          } else if (value === "text") {
+            slide.addText(text, {
+              fontSize: 20,
+              align: "left",
+              color: "008899",
+              ...coordinates.sections[key],
+            });
+          }
+        }
+      } else if (item.layout === 2) {
+        for (const [key, value] of Object.entries(item.content)) {
+          if (value === "image") {
+            slide.addImage({
+              path: image,
+              type: "cover",
+              ...coordinates.sections[key],
+            });
+          } else if (value === "text") {
+            slide.addText(text, {
+              fontSize: 14,
+              align: "left",
+              color: "008899",
+              ...coordinates.sections[key],
+            });
+          }
+        }
+      } else if (item.layout === 3) {
+        for (const [key, value] of Object.entries(item.content)) {
+          if (value === "image") {
+            slide.addImage({
+              path: image,
+              type: "cover",
+              ...coordinates.sections[key],
+            });
+          } else if (value === "text") {
+            slide.addText(text, {
+              fontSize: 14,
+              align: "left",
+              color: "008899",
+              ...coordinates.sections[key],
+            });
+          }
+        }
+      }
+    });
+
+    pptx.writeFile({ fileName: "example-01-slides.pptx" });
   };
 
   const onRemoveSlide = (idx) => {
-    setSlides(slides.filter((item, i) => i !== idx));
+    setSlides(slides.filter((s) => s.id !== idx));
   };
 
-  const emptySlide = (idx) => (
-    <section
-      key={idx}
-      className="slide"
-      style={{ width: "10in", height: "5.625in", position: "relative" }}
-    >
-      <div className="editable-ctrls">
-        <button className="close-btn" onClick={() => onRemoveSlide(idx)}>
-          x
-        </button>
-        <div className="header" style={{ width: "100%" }}>
-          <button className="editable">Add Header</button>
-        </div>
-        <div className="text">
-          <button className="editable">Add Text</button>
-        </div>
-      </div>
-    </section>
+  const updateSlideContent = (idx, section, content) => {
+    console.log(idx, section, content);
+
+    const newSlides = slides.map((s, i) => {
+      if (s.id === idx)
+        return { ...s, content: { ...s.content, [section]: content } };
+      else return s;
+    });
+
+    setSlides(newSlides);
+  };
+
+  const headings = [
+    "Mastering Accounting",
+    "Financial Statements",
+    "Cash Flow vs Profit",
+    "Common Mistakes",
+    "Accurate Bookkeeping",
+    "Tax Strategies",
+    "Auditing in Business Success",
+  ];
+
+  const layoutCell = (
+    <div className="flex flex-col justify-center grow border-2 border-dashed border-slate-400 opacity-75">
+      <p className="text-black opacity-200 text-slate-500">+</p>
+    </div>
   );
 
-  const headerText = (title) => {
-    return <p style={{ fontSize: "3rem" }}>{title}</p>;
+  const ContentSection = ({ item, idx, section }) => {
+    return item?.content?.[section] === "image" ? (
+      <div className="flex flex-col items-center gap-2">
+        <IoImage className="text-slate-900" size={50} />
+        <h3>Image Added!</h3>
+      </div>
+    ) : item?.content?.[section] === "text" ? (
+      <div className="flex flex-col items-center gap-2">
+        <LuScanText className="text-slate-900" size={50} />
+        <h3>Text Added!</h3>
+      </div>
+    ) : (
+      <div className="flex gap-2">
+        <button
+          className="flex flex-col items-center justify-between bg-slate-300 text-slate-900"
+          onClick={() => updateSlideContent(item.id, section, "image")}
+        >
+          <IoImage className="text-slate-900" size={30} />
+          Add Image
+        </button>
+        <button
+          className="flex flex-col items-center justify-between bg-slate-300 text-slate-900"
+          onClick={() => updateSlideContent(item.id, section, "text")}
+        >
+          <LuScanText className="text-slate-900" size={28} />
+          Add Text
+        </button>
+      </div>
+    );
   };
 
-  function runDemo() {
-    let pptx = new pptxgen();
-    let slide = pptx.addSlide({
-      masterName: "Main Slide",
-      sectionTitle: "React Demo Slide 01",
-    });
-
-    let dataChartRadar = [
-      {
-        name: "Region 1",
-        labels: ["May", "June", "July", "August", "September"],
-        values: [26, 53, 100, 75, 41],
-      },
-    ];
-    slide.addChart(pptx.ChartType.radar, dataChartRadar, {
-      x: 0.36,
-      y: 2.25,
-      w: 4.0,
-      h: 4.0,
-      radarStyle: "standard",
-    });
-
-    slide.addShape(pptx.ShapeType.rect, {
-      x: 4.36,
-      y: 2.36,
-      w: 5,
-      h: 2.5,
-      fill: pptx.SchemeColor.background2,
-    });
-
-    slide.addText("React Demo!", {
-      x: 1,
-      y: 1,
-      w: "80%",
-      h: 1,
-      fontSize: 36,
-      fill: "eeeeee",
-      align: "center",
-    });
-
-    slide = pptx.addSlide();
-
-    slide.addText("React Demo!", {
-      x: 1,
-      y: 0.5,
-      w: "80%",
-      h: 1,
-      fontSize: 36,
-      align: "center",
-      fill: { color: "D3E3F3" },
-      color: "008899",
-    });
-
-    slide.addChart(pptx.ChartType.radar, dataChartRadar, {
-      x: 1,
-      y: 1.9,
-      w: 8,
-      h: 3,
-    });
-
-    slide.addText(`PpptxGenJS version: ${pptx.version}`, {
-      x: 0,
-      y: 5.3,
-      w: "100%",
-      h: 0.33,
-      fontSize: 10,
-      align: "center",
-      fill: "E1E1E1", //{ color: pptx.SchemeColor.background2 },
-      color: "A1A1A1", // pptx.SchemeColor.accent3,
-    });
-
-    pptx.writeFile({ fileName: "pptxgenjs-demo-react.pptx" });
-  }
-
   return (
-    <div className="main-section">
-      <header>
-        <h1>React Powerpoint</h1>
-      </header>
-      <div className="row">
-        <div className="left-section">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginRight: "10px",
-              gap: "0.5rem",
-            }}
+    <div className="flex h-dvh w-dvw">
+      <div className="basis-2/12 bg-slate-200">
+        <h2 className="p-4 text-2xl font-medium text-[#646cff]">
+          React PptxGenJS
+        </h2>
+        <ul className="list-none px-6">
+          {headings.map((item, idx) => (
+            <li
+              key={idx}
+              className="border-b-1 border-slate-300 py-2.5"
+            >
+              <div className="flex flex-row items-center p-0 m-0">
+                <LuScanText className="me-3" />
+                {item}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="basis-10/12 bg-slate-100 flex flex-col items-center gap-4 overflow-y-auto">
+        <div className="flex justify-end w-full p-4 fixed top-0 right-0">
+          <button
+            className="bg-[#646cff] hover:bg-slate-500 text-white shadow-md"
+            onClick={exportPPTX}
           >
+            Export PPTX
+          </button>
+        </div>
+        <h2 className="mt-20 text-2xl font-bold text-slate-600">
+          Start creating your AI Powered Presentation
+        </h2>
+        {slides.map((item, idx) => (
+          <div key={item.id} className="relative">
             <button
-              type="button"
-              className="btn btn-success w-100 me-3"
-              onClick={addSlide}
+              className="absolute top-4 right-4 z-10 !p-2 bg-slate-300 opacity-50 !rounded-3xl"
+              onClick={() => onRemoveSlide(item.id)}
             >
-              Add Slide
+              <IoClose />
             </button>
-            <button
-              type="button"
-              className="btn btn-success w-100 me-3"
-              onClick={exportPPTX}
+            <section
+              className="slide bg-slate-200 shadow-md"
+              style={{ width: "10in", minHeight: "5.625in" }}
             >
-              Run Demo
-            </button>
+              <div className="p-10 h-[5.625in] ">
+                {item?.layout === 1 ? (
+                  <div className="flex justify-center items-center h-full border-2 border-dashed border-slate-400 opacity-75">
+                    <ContentSection item={item} idx={idx} section={0} />
+                  </div>
+                ) : item?.layout === 2 ? (
+                  <div className="flex flex-row h-full gap-2">
+                    <div className="basis-1/2 flex justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                      <ContentSection item={item} idx={idx} section={0} />
+                    </div>
+                    <div className="basis-1/2 flex justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                      <ContentSection item={item} idx={idx} section={1} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-row h-full gap-2">
+                    <div className="basis-1/2 flex flex-col gap-2">
+                      <div className="flex flex-grow justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                        <ContentSection item={item} idx={idx} section={0} />
+                      </div>
+                      <div className="flex flex-grow justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                        <ContentSection item={item} idx={idx} section={2} />
+                      </div>
+                    </div>
+                    <div className="basis-1/2 flex flex-col gap-2">
+                      <div className="flex flex-grow justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                        <ContentSection item={item} idx={idx} section={1} />
+                      </div>
+                      <div className="flex flex-grow justify-center items-center border-2 border-dashed border-slate-400 opacity-75">
+                        <ContentSection item={item} idx={idx} section={3} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
-        </div>
-        <div className="right-section">
-          {slides.map((item, idx) => item(idx))}
-        </div>
+        ))}
+        <section
+          className="flex flex-row gap-4"
+          style={{ width: "10in", minHeight: "2in" }}
+        >
+          <button
+            className="basis-1/3 bg-slate-200 rounded-none"
+            onClick={() => createNewSlide(1)}
+          >
+            <div className="flex justify-center items-center h-[90%] border-2 border-dashed border-slate-400 opacity-75">
+              <p className="text-black opacity-200 text-slate-500">+</p>
+            </div>
+          </button>
+          <button
+            className="basis-1/3 bg-slate-200 rounded-none"
+            onClick={() => createNewSlide(2)}
+          >
+            <div className="flex flex-row h-[90%] gap-2">
+              {layoutCell}
+              {layoutCell}
+            </div>
+          </button>
+          <button
+            className="basis-1/3 bg-slate-200 rounded-none"
+            onClick={() => createNewSlide(3)}
+          >
+            <div className="flex flex-row h-[90%] gap-2">
+              <div className="basis-1/2 flex flex-col gap-2">
+                {layoutCell}
+                {layoutCell}
+              </div>
+              <div className="basis-1/2 flex flex-col gap-2">
+                {layoutCell}
+                {layoutCell}
+              </div>
+            </div>
+          </button>
+        </section>
       </div>
     </div>
   );

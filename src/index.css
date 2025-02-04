@@ -1,11 +1,13 @@
+@import "tailwindcss";
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  /* color: rgba(255, 255, 255, 0.87); */
+  /* background-color: #242424; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -26,9 +28,6 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  /* place-items: center; */
-  /* min-width: 320px; */
-  min-height: 100vh;
 }
 
 .main-section {
@@ -46,7 +45,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  /* background-color: #1a1a1a; */
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -69,55 +68,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
-
-.row {
-  width: 100%;
-  display: flex;
-}
-
-.slide {
-  background-color: #3f3f3f;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.right-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.editable-ctrls {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  width: 80%;
-}
-
-.editable {
-  background-color: #4d4d4d;
-  padding: 1rem;
-  opacity: 0.6;
-  border: 2px dashed rgb(118, 118, 118);
-}
-
-.editable-children {
-  display: flex;
-  flex-direction: row;
-  gap: 0.6rem;
-}
-
-.close-btn {
-  background-color: rgb(81, 81, 81); 
-  font-weight: bold;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 2rem;
-  height: 2rem;
-  padding: 0 0 3px 0;
-  margin: 0;
-  border-radius: 100%;
 }
