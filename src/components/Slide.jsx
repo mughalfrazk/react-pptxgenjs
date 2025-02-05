@@ -3,7 +3,7 @@ import { IoImage } from "react-icons/io5";
 import { LuScanText } from "react-icons/lu";
 
 const AddButtons = () => {
-  return (
+return (
     <div className="flex gap-2">
       <button className="flex flex-col items-center justify-between bg-slate-300 text-slate-900">
         <IoImage className="text-slate-900" size={30} />
